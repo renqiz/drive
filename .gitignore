@@ -34,3 +34,6 @@
 # Editor related temporary files
 *.swp
 .clang_complete
+
+# Generated files
+out

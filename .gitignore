@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Editor related temporary files
+*.swp
+.clang_complete

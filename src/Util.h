@@ -32,3 +32,80 @@
 
 uint64_t htonll(uint64_t val);
 uint64_t ntohll(uint64_t val);
+
+namespace dfs
+{
+  namespace util
+  {
+    // host byte order to network byte order
+
+    template<typename T, size_t sizeT>
+    struct __hton_impl;
+    
+    template<typename T>
+    struct __hton_impl<T, 1>
+    {
+      T operator()(T val) { return val; }
+    };
+    
+    template<typename T>
+    struct __hton_impl<T, 2>
+    {
+      T operator()(T val) { return static_cast<T>(htons(static_cast<uint16_t>(val))); }
+    };
+    
+    template<typename T>
+    struct __hton_impl<T, 4>
+    {
+      T operator()(T val) { return static_cast<T>(htonl(static_cast<uint32_t>(val))); }
+    };
+
+    template<typename T>
+    struct __hton_impl<T, 8>
+    {
+      T operator()(T val) { return static_cast<T>(htonll(static_cast<uint64_t>(val))); }
+    };
+
+    template<typename T>
+    T hton(T val)
+    {
+      return __hton_impl<T, sizeof(T)>()(val);
+    }
+
+
+    // network byte order to host byte order
+
+    template<typename T, size_t sizeT>
+    struct __ntoh_impl;
+
+    template<typename T>
+    struct __ntoh_impl<T, 1>
+    {
+      T operator()(T val) { return val; }
+    };
+
+    template<typename T>
+    struct __ntoh_impl<T, 2>
+    {
+      T operator()(T val) { return static_cast<T>(ntohs(static_cast<uint16_t>(val))); }
+    };
+
+    template<typename T>
+    struct __ntoh_impl<T, 4>
+    {
+      T operator()(T val) { return static_cast<T>(ntohl(static_cast<uint32_t>(val))); }
+    };
+
+    template<typename T>
+    struct __ntoh_impl<T, 8>
+    {
+      T operator()(T val) { return static_cast<T>(ntohll(static_cast<uint64_t>(val))); }
+    };
+
+    template<typename T>
+    T ntoh(T val)
+    {
+      return __ntoh_impl<T, sizeof(T)>()(val);
+    }
+  }
+}

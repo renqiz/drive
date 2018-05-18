@@ -20,53 +20,39 @@
   SOFTWARE.
 */
 
-#include <inttypes.h>
-#include "protocol/WriteBlockResponse.h"
+#pragma once
+
+#include "Buffer.h"
+#include "dsp/Instruction.h"
 
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    WriteBlockResponse::WriteBlockResponse()
-      : Instruction(OpCode::WRITE_BLOCK_RESPONSE)
+    class ReadBlockResponse : public Instruction
     {
-    }
+    public:
 
+      ReadBlockResponse();
 
-    WriteBlockResponse::WriteBlockResponse(uint32_t id)
-      : Instruction(OpCode::WRITE_BLOCK_RESPONSE, id)
-    {
-    }
+      explicit ReadBlockResponse(uint32_t id);
 
+      const Buffer & Buf() const                    { return this->buf; }
 
-    bool WriteBlockResponse::Serialize(IOutputStream & output) const
-    {
-      if (!Instruction::Serialize(output))
-      {
-        return false;
-      }
+      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
 
-      return output.Write(this->size);
-    }
+    public:
 
+      bool Serialize(IOutputStream & output) const override;
 
-    bool WriteBlockResponse::Deserialize(IInputStream & input)
-    {
-      if (!Instruction::Deserialize(input))
-      {
-        return false;
-      }
+      bool Deserialize(IInputStream & input) override;
 
-      return input.Read(&this->size);
-    }
+      void Print() const override;
 
+    private:
 
-    void WriteBlockResponse::Print() const
-    {
-      printf("[%" PRIu32 "][WRITE_BLOCK_RESPONSE] size=%" PRIu32 "\n",
-          this->InstructionId(),
-          this->size);
-    }
+      Buffer buf;
+    };
   }
 }

@@ -22,9 +22,19 @@
 
 #pragma once
 
-#include "protocol/CreatePartitionRequest.h"
-#include "protocol/CreatePartitionResponse.h"
-#include "protocol/ReadBlockRequest.h"
-#include "protocol/ReadBlockResponse.h"
-#include "protocol/WriteBlockRequest.h"
-#include "protocol/WriteBlockResponse.h"
+namespace dfs
+{
+  namespace dsp
+  {
+    enum class OpCode
+    {
+      CREATE_PARTITION_REQUEST = 1,
+      CREATE_PARTITION_RESPONSE = 2,
+      READ_BLOCK_REQUEST = 3,
+      READ_BLOCK_RESPONSE = 4,
+      WRITE_BLOCK_REQUEST = 5,
+      WRITE_BLOCK_RESPONSE = 6,
+      __MAX__
+    };
+  }
+}

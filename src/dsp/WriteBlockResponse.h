@@ -22,40 +22,36 @@
 
 #pragma once
 
-#include <stdint.h>
-#include "IInputStream.h"
-#include "IOutputStream.h"
-#include "protocol/OpCode.h"
+#include "dsp/Instruction.h"
+
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class Instruction
+    class WriteBlockResponse : public Instruction
     {
     public:
 
-      explicit Instruction(OpCode code);
+      WriteBlockResponse();
 
-      explicit Instruction(OpCode code, uint32_t id);
+      explicit WriteBlockResponse(uint32_t id);
 
-      virtual ~Instruction() = default;
+      uint32_t Size() const       { return this->size; }
 
-      OpCode Code() const               { return this->code; }
+      void SetSize(uint32_t val)  { this->size = val; }
 
-      uint32_t InstructionId() const    { return this->instructionId; }
+    public:
 
-      virtual bool Serialize(IOutputStream & output) const;
+      bool Serialize(IOutputStream & output) const override;
 
-      virtual bool Deserialize(IInputStream & input);
+      bool Deserialize(IInputStream & input) override;
 
-      virtual void Print() const = 0;
+      void Print() const override;
 
-    protected:
+    private:
 
-      OpCode code;
-
-      uint32_t instructionId;
+      uint32_t size = 0;
     };
   }
 }

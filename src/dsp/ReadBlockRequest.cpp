@@ -21,12 +21,12 @@
 */
 
 #include <inttypes.h>
-#include "protocol/ReadBlockRequest.h"
+#include "dsp/ReadBlockRequest.h"
 
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
     ReadBlockRequest::ReadBlockRequest()
       : Instruction(OpCode::READ_BLOCK_REQUEST)

@@ -22,54 +22,40 @@
 
 #pragma once
 
-#include <string>
-#include "protocol/Instruction.h"
+#include <stdint.h>
+#include "IInputStream.h"
+#include "IOutputStream.h"
+#include "dsp/OpCode.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class ReadBlockRequest : public Instruction
+    class Instruction
     {
     public:
 
-      ReadBlockRequest();
+      explicit Instruction(OpCode code);
 
-      explicit ReadBlockRequest(uint32_t id);
+      explicit Instruction(OpCode code, uint32_t id);
 
-      const std::string & PartitionId() const       { return this->partitionId; }
+      virtual ~Instruction() = default;
 
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
+      OpCode Code() const               { return this->code; }
 
-      uint64_t BlockId() const                      { return this->blockId; }
+      uint32_t InstructionId() const    { return this->instructionId; }
 
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
+      virtual bool Serialize(IOutputStream & output) const;
 
-      uint32_t Offset() const                       { return this->offset; }
+      virtual bool Deserialize(IInputStream & input);
 
-      void SetOffset(uint32_t val)                  { this->offset = val; }
+      virtual void Print() const = 0;
 
-      uint32_t Size() const                         { return this->size; }
+    protected:
 
-      void SetSize(uint32_t val)                    { this->size = val; }
+      OpCode code;
 
-    public:
-
-      bool Serialize(IOutputStream & output) const override;
-
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      std::string partitionId;
-
-      uint64_t blockId = 0;
-
-      uint32_t offset = 0;
-
-      uint32_t size = 0;
+      uint32_t instructionId;
     };
   }
 }

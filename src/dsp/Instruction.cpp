@@ -20,39 +20,39 @@
   SOFTWARE.
 */
 
-#pragma once
-
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include "dsp/Instruction.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class ReadBlockResponse : public Instruction
+    Instruction::Instruction(OpCode code)
+      : code(code)
+      , instructionId(0)
     {
-    public:
+    }
 
-      ReadBlockResponse();
+    Instruction::Instruction(OpCode code, uint32_t id)
+      : code(code)
+      , instructionId(id)
+    {
+    }
 
-      explicit ReadBlockResponse(uint32_t id);
+    
+    bool Instruction::Serialize(IOutputStream & output) const
+    {
+      return output.Write(static_cast<uint16_t>(this->code)) && output.Write(this->instructionId);
+    }
 
-      const Buffer & Buf() const                    { return this->buf; }
 
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
+    bool Instruction::Deserialize(IInputStream & input)
+    {
+      if (!(input.Remainder() >= sizeof(uint16_t) && input.Read<uint16_t>() == static_cast<uint16_t>(this->code)))
+      {
+        return false;
+      }
 
-    public:
-
-      bool Serialize(IOutputStream & output) const override;
-
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      Buffer buf;
-    };
+      return input.Read(&this->instructionId);
+    }
   }
 }

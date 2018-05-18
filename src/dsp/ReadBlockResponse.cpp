@@ -20,38 +20,34 @@
   SOFTWARE.
 */
 
-#include <string.h>
 #include <inttypes.h>
-#include "protocol/WriteBlockRequest.h"
-
+#include <string.h>
+#include "dsp/ReadBlockResponse.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    WriteBlockRequest::WriteBlockRequest()
-      : Instruction(OpCode::WRITE_BLOCK_RESPONSE)
+    ReadBlockResponse::ReadBlockResponse()
+      : Instruction(OpCode::READ_BLOCK_RESPONSE)
     {
     }
 
 
-    WriteBlockRequest::WriteBlockRequest(uint32_t id)
-      : Instruction(OpCode::WRITE_BLOCK_RESPONSE, id)
+   ReadBlockResponse::ReadBlockResponse(uint32_t id)
+      : Instruction(OpCode::READ_BLOCK_RESPONSE, id)
     {
     }
 
 
-    bool WriteBlockRequest::Serialize(IOutputStream & output) const
+    bool ReadBlockResponse::Serialize(IOutputStream & output) const
     {
       if (!Instruction::Serialize(output))
       {
         return false;
       }
 
-      if (!output.WriteString(this->partitionId) ||
-          !output.Write(this->blockId) ||
-          !output.Write(this->offset) ||
-          !output.Write(static_cast<uint32_t>(this->buf.Size())))
+      if (!output.Write(static_cast<uint32_t>(this->buf.Size())))
       {
         return false;
       }
@@ -64,8 +60,8 @@ namespace dfs
       return true;
     }
 
-    
-    bool WriteBlockRequest::Deserialize(IInputStream & input)
+
+    bool ReadBlockResponse::Deserialize(IInputStream & input)
     {
       if (!Instruction::Deserialize(input))
       {
@@ -73,10 +69,7 @@ namespace dfs
       }
 
       uint32_t length = 0;
-      if (!input.ReadString(this->partitionId) ||
-          !input.Read(&this->blockId) ||
-          !input.Read(&this->offset) ||
-          !input.Read(&length))
+      if (!input.Read(&length))
       {
         return false;
       }
@@ -94,14 +87,11 @@ namespace dfs
       return true;
     }
 
-    
-    void WriteBlockRequest::Print() const
+
+    void ReadBlockResponse::Print() const
     {
-      printf("[%" PRIu32 "][WRITE_BLOCK_REQUEST] partitionId='%s' blockId=%" PRIu64 " offset=%" PRIu32 " size=%lu\n",
+      printf("[%" PRIu32 "][READ_BLOCK_RESPONSE] size=%lu\n",
           this->InstructionId(),
-          this->partitionId.c_str(),
-          this->blockId,
-          this->offset,
           this->buf.Size());
     }
   }

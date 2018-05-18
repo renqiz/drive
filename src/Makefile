@@ -10,16 +10,16 @@ HEADERS = \
 	network/IEndPoint.h \
 	network/Server.h \
 	network/FileServer.h \
-	protocol/CreatePartitionRequest.h \
-	protocol/CreatePartitionResponse.h \
-	protocol/Instruction.h \
-	protocol/InstructionSerializer.h \
-	protocol/OpCode.h \
-	protocol/Protocol.h \
-	protocol/ReadBlockRequest.h \
-	protocol/ReadBlockResponse.h \
-	protocol/WriteBlockRequest.h \
-	protocol/WriteBlockResponse.h \
+	dsp/CreatePartitionRequest.h \
+	dsp/CreatePartitionResponse.h \
+	dsp/Instruction.h \
+	dsp/InstructionSerializer.h \
+	dsp/OpCode.h \
+	dsp/Protocol.h \
+	dsp/ReadBlockRequest.h \
+	dsp/ReadBlockResponse.h \
+	dsp/WriteBlockRequest.h \
+	dsp/WriteBlockResponse.h \
   Action.h \
   BitSet.h \
 	Buffer.h \
@@ -41,14 +41,14 @@ SOURCES = \
 	network/FileConnection.cpp \
 	network/FileEndPoint.cpp \
 	network/FileServer.cpp \
-	protocol/CreatePartitionRequest.cpp \
-	protocol/CreatePartitionResponse.cpp \
-	protocol/Instruction.cpp \
-	protocol/InstructionSerializer.cpp \
-	protocol/ReadBlockRequest.cpp \
-	protocol/ReadBlockResponse.cpp \
-	protocol/WriteBlockRequest.cpp \
-	protocol/WriteBlockResponse.cpp \
+	dsp/CreatePartitionRequest.cpp \
+	dsp/CreatePartitionResponse.cpp \
+	dsp/Instruction.cpp \
+	dsp/InstructionSerializer.cpp \
+	dsp/ReadBlockRequest.cpp \
+	dsp/ReadBlockResponse.cpp \
+	dsp/WriteBlockRequest.cpp \
+	dsp/WriteBlockResponse.cpp \
   Action.cpp \
   BitSet.cpp \
 	Buffer.cpp \

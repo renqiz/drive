@@ -22,19 +22,24 @@
 
 #pragma once
 
+#include <memory>
+#include "dsp/Instruction.h"
+
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    enum class OpCode
+    class InstructionSerializer
     {
-      CREATE_PARTITION_REQUEST = 1,
-      CREATE_PARTITION_RESPONSE = 2,
-      READ_BLOCK_REQUEST = 3,
-      READ_BLOCK_RESPONSE = 4,
-      WRITE_BLOCK_REQUEST = 5,
-      WRITE_BLOCK_RESPONSE = 6,
-      __MAX__
+    public:
+
+      static bool Serialize(IOutputStream & output, const Instruction * instr);
+
+      static std::unique_ptr<Instruction> Deserialize(IInputStream & input);
+
+    private:
+
+      static std::unique_ptr<Instruction> CreateInstruction(OpCode code);
     };
   }
 }

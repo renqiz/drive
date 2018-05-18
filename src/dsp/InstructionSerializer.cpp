@@ -20,13 +20,13 @@
   SOFTWARE.
 */
 
-#include "protocol/Protocol.h"
-#include "protocol/InstructionSerializer.h"
+#include "dsp/Protocol.h"
+#include "dsp/InstructionSerializer.h"
 
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
     bool InstructionSerializer::Serialize(IOutputStream & output, const Instruction * instr)
     {

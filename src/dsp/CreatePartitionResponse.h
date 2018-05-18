@@ -22,24 +22,37 @@
 
 #pragma once
 
-#include <memory>
-#include "protocol/Instruction.h"
+#include <string>
+#include "dsp/Instruction.h"
+
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class InstructionSerializer
+    class CreatePartitionResponse : public Instruction
     {
     public:
 
-      static bool Serialize(IOutputStream & output, const Instruction * instr);
+      CreatePartitionResponse();
 
-      static std::unique_ptr<Instruction> Deserialize(IInputStream & input);
+      explicit CreatePartitionResponse(uint32_t id);
+
+      const std::string & PartitionId() const   { return this->partitionId; }
+
+      void SetPartitionId(std::string val)      { this->partitionId = std::move(val); }
+
+    public:
+
+      bool Serialize(IOutputStream & output) const override;
+
+      bool Deserialize(IInputStream & input) override;
+
+      void Print() const override;
 
     private:
 
-      static std::unique_ptr<Instruction> CreateInstruction(OpCode code);
+      std::string partitionId;
     };
   }
 }

@@ -20,39 +20,65 @@
   SOFTWARE.
 */
 
-#include "protocol/Instruction.h"
+#include <inttypes.h>
+#include "dsp/CreatePartitionRequest.h"
+
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    Instruction::Instruction(OpCode code)
-      : code(code)
-      , instructionId(0)
+    CreatePartitionRequest::CreatePartitionRequest()
+      : Instruction(OpCode::CREATE_PARTITION_REQUEST)
     {
     }
 
-    Instruction::Instruction(OpCode code, uint32_t id)
-      : code(code)
-      , instructionId(id)
+
+    CreatePartitionRequest::CreatePartitionRequest(uint32_t id)
+      : Instruction(OpCode::CREATE_PARTITION_REQUEST, id)
     {
     }
 
-    
-    bool Instruction::Serialize(IOutputStream & output) const
-    {
-      return output.Write(static_cast<uint16_t>(this->code)) && output.Write(this->instructionId);
-    }
 
-
-    bool Instruction::Deserialize(IInputStream & input)
+    bool CreatePartitionRequest::Serialize(IOutputStream & output) const
     {
-      if (!(input.Remainder() >= sizeof(uint16_t) && input.Read<uint16_t>() == static_cast<uint16_t>(this->code)))
+      if (!Instruction::Serialize(output))
       {
         return false;
       }
 
-      return input.Read(&this->instructionId);
+      return output.Write(this->blockSize) && output.Write(this->blockCount);
+    }
+
+
+    bool CreatePartitionRequest::Deserialize(IInputStream & input)
+    {
+      if (!Instruction::Deserialize(input))
+      {
+        return false;
+      }
+
+      if (input.Remainder() < sizeof(this->blockSize) + sizeof(this->blockCount))
+      {
+        return false;
+      }
+
+      input.Read(&this->blockSize);
+
+      input.Read(&this->blockCount);
+
+      return true;
+    }
+
+
+    void CreatePartitionRequest::Print() const
+    {
+      printf(
+          "[%" PRIu32 "][CREATE_PARTITION_REQUEST] blockSize=%" PRIu32 " blockCount=%" PRIu64 "\n",
+          this->InstructionId(),
+          this->blockSize,
+          this->blockCount
+      );
     }
   }
 }

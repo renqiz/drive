@@ -23,24 +23,35 @@
 #pragma once
 
 #include <string>
-#include "protocol/Instruction.h"
-
+#include "dsp/Instruction.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class CreatePartitionResponse : public Instruction
+    class ReadBlockRequest : public Instruction
     {
     public:
 
-      CreatePartitionResponse();
+      ReadBlockRequest();
 
-      explicit CreatePartitionResponse(uint32_t id);
+      explicit ReadBlockRequest(uint32_t id);
 
-      const std::string & PartitionId() const   { return this->partitionId; }
+      const std::string & PartitionId() const       { return this->partitionId; }
 
-      void SetPartitionId(std::string val)      { this->partitionId = std::move(val); }
+      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
+
+      uint64_t BlockId() const                      { return this->blockId; }
+
+      void SetBlockId(uint64_t id)                  { this->blockId = id; }
+
+      uint32_t Offset() const                       { return this->offset; }
+
+      void SetOffset(uint32_t val)                  { this->offset = val; }
+
+      uint32_t Size() const                         { return this->size; }
+
+      void SetSize(uint32_t val)                    { this->size = val; }
 
     public:
 
@@ -53,6 +64,12 @@ namespace dfs
     private:
 
       std::string partitionId;
+
+      uint64_t blockId = 0;
+
+      uint32_t offset = 0;
+
+      uint32_t size = 0;
     };
   }
 }

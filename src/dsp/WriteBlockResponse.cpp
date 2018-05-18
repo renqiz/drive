@@ -20,44 +20,53 @@
   SOFTWARE.
 */
 
-#pragma once
+#include <inttypes.h>
+#include "dsp/WriteBlockResponse.h"
 
-#include "protocol/Instruction.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class CreatePartitionRequest : public Instruction
+    WriteBlockResponse::WriteBlockResponse()
+      : Instruction(OpCode::WRITE_BLOCK_RESPONSE)
     {
-    public:
+    }
 
-      CreatePartitionRequest();
 
-      explicit CreatePartitionRequest(uint32_t id);
+    WriteBlockResponse::WriteBlockResponse(uint32_t id)
+      : Instruction(OpCode::WRITE_BLOCK_RESPONSE, id)
+    {
+    }
 
-      uint32_t BlockSize() const        { return this->blockSize; }
 
-      void SetBlockSize(uint32_t val)   { this->blockSize = val; }
+    bool WriteBlockResponse::Serialize(IOutputStream & output) const
+    {
+      if (!Instruction::Serialize(output))
+      {
+        return false;
+      }
 
-      uint64_t BlockCount() const       { return this->blockCount; }
+      return output.Write(this->size);
+    }
 
-      void SetBlockCount(uint64_t val)  { this->blockCount = val; }
 
-    public:
+    bool WriteBlockResponse::Deserialize(IInputStream & input)
+    {
+      if (!Instruction::Deserialize(input))
+      {
+        return false;
+      }
 
-      bool Serialize(IOutputStream & output) const override;
+      return input.Read(&this->size);
+    }
 
-      bool Deserialize(IInputStream & input) override;
 
-      void Print() const override;
-
-    private:
-
-      uint32_t blockSize = 0;
-
-      // TODO: use a contract to specify the total block count
-      uint64_t blockCount = 0;
-    };
+    void WriteBlockResponse::Print() const
+    {
+      printf("[%" PRIu32 "][WRITE_BLOCK_RESPONSE] size=%" PRIu32 "\n",
+          this->InstructionId(),
+          this->size);
+    }
   }
 }

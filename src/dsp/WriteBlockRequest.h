@@ -24,11 +24,11 @@
 
 #include <string>
 #include "Buffer.h"
-#include "protocol/Instruction.h"
+#include "dsp/Instruction.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
     class WriteBlockRequest : public Instruction
     {

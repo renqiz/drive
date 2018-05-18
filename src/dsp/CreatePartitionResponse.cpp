@@ -21,64 +21,52 @@
 */
 
 #include <inttypes.h>
-#include "protocol/CreatePartitionRequest.h"
+#include "dsp/CreatePartitionResponse.h"
 
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    CreatePartitionRequest::CreatePartitionRequest()
-      : Instruction(OpCode::CREATE_PARTITION_REQUEST)
+    CreatePartitionResponse::CreatePartitionResponse()
+      : Instruction(OpCode::CREATE_PARTITION_RESPONSE)
     {
     }
 
 
-    CreatePartitionRequest::CreatePartitionRequest(uint32_t id)
-      : Instruction(OpCode::CREATE_PARTITION_REQUEST, id)
+    CreatePartitionResponse::CreatePartitionResponse(uint32_t id)
+      : Instruction(OpCode::CREATE_PARTITION_RESPONSE, id)
     {
     }
 
 
-    bool CreatePartitionRequest::Serialize(IOutputStream & output) const
+    bool CreatePartitionResponse::Serialize(IOutputStream & output) const
     {
       if (!Instruction::Serialize(output))
       {
         return false;
       }
 
-      return output.Write(this->blockSize) && output.Write(this->blockCount);
+      return output.WriteString(this->partitionId);
     }
 
 
-    bool CreatePartitionRequest::Deserialize(IInputStream & input)
+    bool CreatePartitionResponse::Deserialize(IInputStream & input)
     {
       if (!Instruction::Deserialize(input))
       {
         return false;
       }
 
-      if (input.Remainder() < sizeof(this->blockSize) + sizeof(this->blockCount))
-      {
-        return false;
-      }
-
-      input.Read(&this->blockSize);
-
-      input.Read(&this->blockCount);
-
-      return true;
+      return input.ReadString(this->partitionId);
     }
 
 
-    void CreatePartitionRequest::Print() const
+    void CreatePartitionResponse::Print() const
     {
-      printf(
-          "[%" PRIu32 "][CREATE_PARTITION_REQUEST] blockSize=%" PRIu32 " blockCount=%" PRIu64 "\n",
+      printf("[%" PRIu32 "][CREATE_PARTITION_RESPONSE] partitionId='%s'\n",
           this->InstructionId(),
-          this->blockSize,
-          this->blockCount
-      );
+          this->partitionId.c_str());
     }
   }
 }

@@ -20,53 +20,11 @@
   SOFTWARE.
 */
 
-#include <inttypes.h>
-#include "protocol/CreatePartitionResponse.h"
+#pragma once
 
-
-namespace dfs
-{
-  namespace protocol
-  {
-    CreatePartitionResponse::CreatePartitionResponse()
-      : Instruction(OpCode::CREATE_PARTITION_RESPONSE)
-    {
-    }
-
-
-    CreatePartitionResponse::CreatePartitionResponse(uint32_t id)
-      : Instruction(OpCode::CREATE_PARTITION_RESPONSE, id)
-    {
-    }
-
-
-    bool CreatePartitionResponse::Serialize(IOutputStream & output) const
-    {
-      if (!Instruction::Serialize(output))
-      {
-        return false;
-      }
-
-      return output.WriteString(this->partitionId);
-    }
-
-
-    bool CreatePartitionResponse::Deserialize(IInputStream & input)
-    {
-      if (!Instruction::Deserialize(input))
-      {
-        return false;
-      }
-
-      return input.ReadString(this->partitionId);
-    }
-
-
-    void CreatePartitionResponse::Print() const
-    {
-      printf("[%" PRIu32 "][CREATE_PARTITION_RESPONSE] partitionId='%s'\n",
-          this->InstructionId(),
-          this->partitionId.c_str());
-    }
-  }
-}
+#include "dsp/CreatePartitionRequest.h"
+#include "dsp/CreatePartitionResponse.h"
+#include "dsp/ReadBlockRequest.h"
+#include "dsp/ReadBlockResponse.h"
+#include "dsp/WriteBlockRequest.h"
+#include "dsp/WriteBlockResponse.h"

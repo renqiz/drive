@@ -22,24 +22,27 @@
 
 #pragma once
 
-#include "protocol/Instruction.h"
-
+#include "dsp/Instruction.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace dsp
   {
-    class WriteBlockResponse : public Instruction
+    class CreatePartitionRequest : public Instruction
     {
     public:
 
-      WriteBlockResponse();
+      CreatePartitionRequest();
 
-      explicit WriteBlockResponse(uint32_t id);
+      explicit CreatePartitionRequest(uint32_t id);
 
-      uint32_t Size() const       { return this->size; }
+      uint32_t BlockSize() const        { return this->blockSize; }
 
-      void SetSize(uint32_t val)  { this->size = val; }
+      void SetBlockSize(uint32_t val)   { this->blockSize = val; }
+
+      uint64_t BlockCount() const       { return this->blockCount; }
+
+      void SetBlockCount(uint64_t val)  { this->blockCount = val; }
 
     public:
 
@@ -51,7 +54,10 @@ namespace dfs
 
     private:
 
-      uint32_t size = 0;
+      uint32_t blockSize = 0;
+
+      // TODO: use a contract to specify the total block count
+      uint64_t blockCount = 0;
     };
   }
 }

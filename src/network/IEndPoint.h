@@ -22,55 +22,15 @@
 
 #pragma once
 
-#include <string>
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class IEndPoint
     {
     public:
 
-      WriteBlockRequest();
-
-      explicit WriteBlockRequest(uint32_t id);
-
-      const std::string & PartitionId() const       { return this->partitionId; }
-
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
-
-      uint64_t BlockId() const                      { return this->blockId; }
-
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
-
-    private:
-
-      std::string partitionId;
-
-      uint64_t blockId = 0;
-
-      uint32_t offset = 0;
-
-      Buffer buf;
+      virtual ~IEndPoint() = default;
     };
   }
 }

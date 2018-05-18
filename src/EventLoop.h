@@ -22,37 +22,56 @@
 
 #pragma once
 
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include <atomic>
+#include <thread>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
+#include "LockFreeQueue.h"
 
 namespace dfs
 {
-  namespace protocol
+  using EventHandler = std::function<void(void *, void *)>;
+
+  class EventLoop
   {
-    class ReadBlockResponse : public Instruction
+  private:
+
+    struct EventHandlerEntry
     {
-    public:
-
-      ReadBlockResponse();
-
-      explicit ReadBlockResponse(uint32_t id);
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-
-      bool Serialize(IOutputStream & output) const override;
-
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      Buffer buf;
+      EventHandler handler = nullptr;
+      void * sender = nullptr;
+      void * args = nullptr;
+      std::shared_ptr<std::atomic<bool>> completed;
+      std::shared_ptr<std::mutex> mutex;
+      std::shared_ptr<std::condition_variable> cond;
     };
-  }
+
+  public:
+
+    ~EventLoop();
+
+    void Run();
+
+    void Quit();
+
+    void BeginInvoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
+
+    void Invoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
+
+    bool IsRunning() const { return this->alive; }
+
+  private:
+
+    std::mutex mutex;
+
+    std::condition_variable cond;
+
+    std::atomic<bool> quit{false};
+
+    std::atomic<bool> alive{false};
+
+    LockFreeQueue<EventHandlerEntry *> events;
+  };
 }

@@ -22,55 +22,39 @@
 
 #pragma once
 
-#include <string>
-#include "Buffer.h"
-#include "protocol/Instruction.h"
+#include "network/FileEndPoint.h"
+#include "network/Connection.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class FileConnection : public Connection
     {
     public:
 
-      WriteBlockRequest();
+      explicit FileConnection(std::unique_ptr<IEndPoint> local, std::unique_ptr<IEndPoint> remote);
 
-      explicit WriteBlockRequest(uint32_t id);
+      bool Send(const void * data, size_t len) override;
 
-      const std::string & PartitionId() const       { return this->partitionId; }
+      bool Receive(Buffer & buffer) override;
 
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
+      bool Wait(int msTimeout = 0) override;
 
-      uint64_t BlockId() const                      { return this->blockId; }
-
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
+      static void GetFolderPath(char * buffer, const FileEndPoint * to);
 
     private:
 
-      std::string partitionId;
+      static const char * ROOT;
 
-      uint64_t blockId = 0;
+      static void GetFolderPath(char * buffer, const FileEndPoint * from, const FileEndPoint * to);
 
-      uint32_t offset = 0;
+      static void Mkdir(const FileEndPoint * from, const FileEndPoint * to);
 
-      Buffer buf;
+    private:
+
+      FileEndPoint * fepLocal = nullptr;
+      FileEndPoint * fepRemote = nullptr;
     };
   }
 }

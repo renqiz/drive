@@ -41,55 +41,6 @@ namespace dfs
     }
 
 
-    WriteBlockRequest::~WriteBlockRequest()
-    {
-      if (this->dataOwned && this->data)
-      {
-        delete[] this->data;
-        this->data = nullptr;
-      }
-    }
-
-
-    void WriteBlockRequest::SetData(const void * data, uint32_t size)
-    {
-      this->SetData(const_cast<void *>(data), size, false);
-    }
-
-
-    void WriteBlockRequest::SetData(void * data, uint32_t size, bool move)
-    {
-      if (!data && size > 0)
-      {
-        return;
-      }
-
-      if (this->dataOwned && this->data)
-      {
-        delete[] this->data;
-        this->data = nullptr;
-        this->dataOwned = false;
-      }
-
-      this->size = size;
-
-      if (size > 0)
-      {
-        if (move)
-        {
-          this->data = new uint8_t[size];
-          memcpy(this->data, data, size);
-        }
-        else
-        {
-          this->data = reinterpret_cast<uint8_t *>(data);
-        }
-
-        this->dataOwned = move;
-      }
-    }
-
-
     bool WriteBlockRequest::Serialize(IOutputStream & output) const
     {
       if (!Instruction::Serialize(output))
@@ -100,14 +51,14 @@ namespace dfs
       if (!output.WriteString(this->partitionId) ||
           !output.Write(this->blockId) ||
           !output.Write(this->offset) ||
-          !output.Write(this->size))
+          !output.Write(static_cast<uint32_t>(this->buf.Size())))
       {
         return false;
       }
 
-      if (this->size > 0)
+      if (this->buf.Size() > 0)
       {
-        return output.Write(this->data, this->size);
+        return output.Write(static_cast<uint8_t *>(this->buf.Buf()), this->buf.Size());
       }
 
       return true;
@@ -121,19 +72,23 @@ namespace dfs
         return false;
       }
 
+      uint32_t length = 0;
       if (!input.ReadString(this->partitionId) ||
           !input.Read(&this->blockId) ||
           !input.Read(&this->offset) ||
-          !input.Read(&this->size))
+          !input.Read(&length))
       {
         return false;
       }
 
-      if (this->size > 0)
+      if (!this->buf.Resize(length))
       {
-        this->data = new uint8_t[this->size];
-        this->dataOwned = true;
-        return input.Read(this->data, this->size);
+        return false;
+      }
+
+      if (length > 0)
+      {
+        return input.Read(static_cast<uint8_t *>(this->buf.Buf()), this->buf.Size());
       }
 
       return true;
@@ -142,12 +97,12 @@ namespace dfs
     
     void WriteBlockRequest::Print() const
     {
-      printf("[%" PRIu32 "][WRITE_BLOCK_REQUEST] partitionId='%s' blockId=%" PRIu64 " offset=%" PRIu32 " size=%" PRIu32 "\n",
+      printf("[%" PRIu32 "][WRITE_BLOCK_REQUEST] partitionId='%s' blockId=%" PRIu64 " offset=%" PRIu32 " size=%lu\n",
           this->InstructionId(),
           this->partitionId.c_str(),
           this->blockId,
           this->offset,
-          this->size);
+          this->buf.Size());
     }
   }
 }

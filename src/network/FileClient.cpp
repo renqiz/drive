@@ -20,39 +20,36 @@
   SOFTWARE.
 */
 
-#pragma once
-
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include "network/FileConnection.h"
+#include "network/FileClient.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class ReadBlockResponse : public Instruction
+    std::atomic<uint16_t> FileClient::lastId{0};
+
+
+    FileClient::FileClient(const FileEndPoint & local)
+      : localEndPoint(local)
     {
-    public:
+    }
 
-      ReadBlockResponse();
 
-      explicit ReadBlockResponse(uint32_t id);
+    Connection * FileClient::CreateConnection(const IEndPoint * remote)
+    {
+      auto remoteEndPoint = dynamic_cast<const FileEndPoint *>(remote);
+      if (!remoteEndPoint)
+      {
+        return nullptr;
+      }
 
-      const Buffer & Buf() const                    { return this->buf; }
+      this->localEndPoint.SetId(++lastId);
 
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
+      auto localPtr = std::unique_ptr<IEndPoint>(new FileEndPoint(this->localEndPoint));
+      auto remotePtr = std::unique_ptr<IEndPoint>(new FileEndPoint(*remoteEndPoint));
 
-    public:
-
-      bool Serialize(IOutputStream & output) const override;
-
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      Buffer buf;
-    };
+      return new FileConnection(std::move(localPtr), std::move(remotePtr));
+    }
   }
 }

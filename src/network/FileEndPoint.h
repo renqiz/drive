@@ -22,55 +22,75 @@
 
 #pragma once
 
+#include <assert.h>
 #include <string>
-#include "Buffer.h"
-#include "protocol/Instruction.h"
+#include "network/IEndPoint.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class FileEndPoint : public IEndPoint
     {
     public:
 
-      WriteBlockRequest();
-
-      explicit WriteBlockRequest(uint32_t id);
-
-      const std::string & PartitionId() const       { return this->partitionId; }
-
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
-
-      uint64_t BlockId() const                      { return this->blockId; }
-
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
+      static FileEndPoint * this_endpoint;
 
     public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
+
+      explicit FileEndPoint(const std::string & name)
+        : name(name)
+        , hasId(false)
+      {
+      }
+
+
+      explicit FileEndPoint(const std::string & name, uint16_t id)
+        : name(name)
+        , id(id)
+        , hasId(true)
+      {
+      }
+
+
+      const std::string & Name() const
+      {
+        return this->name;
+      }
+
+
+      uint16_t Id() const
+      {
+        assert(this->hasId);
+        return this->id;
+      }
+
+
+      void SetId(uint16_t val)
+      {
+        this->id = val;
+        this->hasId = true;
+      }
+
 
     private:
 
-      std::string partitionId;
+      std::string name;
 
-      uint64_t blockId = 0;
+      uint16_t id;
 
-      uint32_t offset = 0;
+      bool hasId;
 
-      Buffer buf;
+    public:
+
+      struct Compare
+      {
+        bool operator()(const FileEndPoint & lhs, const FileEndPoint & rhs)
+        {
+          int val = lhs.Name().compare(rhs.Name());
+          return val < 0 || (val == 0 && lhs.Id() < rhs.Id());
+        }
+      };
     };
   }
 }

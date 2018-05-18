@@ -22,55 +22,47 @@
 
 #pragma once
 
-#include <string>
+#include <memory>
 #include "Buffer.h"
-#include "protocol/Instruction.h"
+#include "network/IEndPoint.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class Connection
     {
     public:
 
-      WriteBlockRequest();
+      explicit Connection(std::unique_ptr<IEndPoint> local, std::unique_ptr<IEndPoint> remote)
+        : local(std::move(local))
+        , remote(std::move(remote))
+      {
+      }
 
-      explicit WriteBlockRequest(uint32_t id);
+      virtual ~Connection() = default;
 
-      const std::string & PartitionId() const       { return this->partitionId; }
+      IEndPoint * LocalEndPoint()      { return this->local.get(); }
+      IEndPoint * RemoteEndPoint()     { return this->remote.get(); }
 
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
+      // Asynchronous send data and return immediately.
+      // Return false if any error.
+      virtual bool Send(const void * data, size_t len) = 0;
 
-      uint64_t BlockId() const                      { return this->blockId; }
+      // Try to receive data and return immediately. Return empty if nothing received.
+      // Return false if any error.
+      virtual bool Receive(Buffer & buffer) = 0;
 
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
+      // Wait for next message or timeout.
+      // Return true if a new message is arrived, or false if timeout.
+      // msTimeout should be set to 0 to disable timeout.
+      virtual bool Wait(int msTimeout = 0) = 0;
 
     private:
 
-      std::string partitionId;
+      std::unique_ptr<IEndPoint> local;
 
-      uint64_t blockId = 0;
-
-      uint32_t offset = 0;
-
-      Buffer buf;
+      std::unique_ptr<IEndPoint> remote;
     };
   }
 }

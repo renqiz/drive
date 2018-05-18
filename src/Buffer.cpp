@@ -20,79 +20,52 @@
   SOFTWARE.
 */
 
-#include <inttypes.h>
+#include <stdlib.h>
 #include <string.h>
-#include "protocol/ReadBlockResponse.h"
+#include "Buffer.h"
 
 namespace dfs
 {
-  namespace protocol
+  Buffer::~Buffer()
   {
-    ReadBlockResponse::ReadBlockResponse()
-      : Instruction(OpCode::READ_BLOCK_RESPONSE)
+    if (this->buf)
     {
+      free(this->buf);
+      this->buf = nullptr;
     }
+  }
 
 
-   ReadBlockResponse::ReadBlockResponse(uint32_t id)
-      : Instruction(OpCode::READ_BLOCK_RESPONSE, id)
+  bool Buffer::Resize(size_t size, bool clean)
+  {
+    if (size == 0)
     {
-    }
-
-
-    bool ReadBlockResponse::Serialize(IOutputStream & output) const
-    {
-      if (!Instruction::Serialize(output))
+      if (this->buf)
       {
-        return false;
+        free(this->buf);
+        this->buf = nullptr;
       }
 
-      if (!output.Write(static_cast<uint32_t>(this->buf.Size())))
-      {
-        return false;
-      }
+      this->size = size;
+      return true;
+    }
 
-      if (this->buf.Size() > 0)
+    uint8_t * ptr = static_cast<uint8_t *>(realloc(this->buf, size));
+    if (ptr)
+    {
+      this->buf = ptr;
+      this->size = size;
+
+      if (clean)
       {
-        return output.Write(static_cast<uint8_t *>(this->buf.Buf()), this->buf.Size());
+        memset(this->buf, 0, this->size);
       }
 
       return true;
     }
-
-
-    bool ReadBlockResponse::Deserialize(IInputStream & input)
+    else
     {
-      if (!Instruction::Deserialize(input))
-      {
-        return false;
-      }
-
-      uint32_t length = 0;
-      if (!input.Read(&length))
-      {
-        return false;
-      }
-
-      if (!this->buf.Resize(length))
-      {
-        return false;
-      }
-
-      if (length > 0)
-      {
-        return input.Read(static_cast<uint8_t *>(this->buf.Buf()), this->buf.Size());
-      }
-
-      return true;
-    }
-
-
-    void ReadBlockResponse::Print() const
-    {
-      printf("[%" PRIu32 "][READ_BLOCK_RESPONSE] size=%lu\n",
-          this->InstructionId(),
-          this->buf.Size());
+      return false;
     }
   }
 }

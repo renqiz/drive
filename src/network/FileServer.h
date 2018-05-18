@@ -22,55 +22,48 @@
 
 #pragma once
 
-#include <string>
-#include "Buffer.h"
-#include "protocol/Instruction.h"
+#include <map>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+#include "network/Server.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class FileServer : public Server
     {
     public:
 
-      WriteBlockRequest();
+      ~FileServer() override;
 
-      explicit WriteBlockRequest(uint32_t id);
+      bool Listen(const IEndPoint * local) override;
 
-      const std::string & PartitionId() const       { return this->partitionId; }
-
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
-
-      uint64_t BlockId() const                      { return this->blockId; }
-
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
+      void Shutdown() override;
 
     private:
 
-      std::string partitionId;
+      void ThreadProc();
 
-      uint64_t blockId = 0;
+      void CheckConnections(const char * dirname);
 
-      uint32_t offset = 0;
+      void CheckRequests(Connection * conn);
 
-      Buffer buf;
+    private:
+
+      FileEndPoint localEndPoint;
+
+      std::map<FileEndPoint, Connection *, FileEndPoint::Compare> connections;
+
+      std::thread thread;
+
+      std::mutex mutex;
+
+      std::condition_variable cond;
+
+      std::atomic<bool> running{false};
     };
   }
 }

@@ -22,37 +22,61 @@
 
 #pragma once
 
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include <thread>
+#include <memory>
+#include <set>
+#include <mutex>
+#include <atomic>
+#include "EventLoop.h"
 
 namespace dfs
 {
-  namespace protocol
+  class Thread
   {
-    class ReadBlockResponse : public Instruction
-    {
-    public:
+  public:
 
-      ReadBlockResponse();
+    static Thread * Current();
 
-      explicit ReadBlockResponse(uint32_t id);
+  public:
 
-      const Buffer & Buf() const                    { return this->buf; }
+    explicit Thread(const char * name = nullptr);
 
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
+    ~Thread();
 
-    public:
+    bool IsRunning() const;
 
-      bool Serialize(IOutputStream & output) const override;
+    void BeginInvoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
 
-      bool Deserialize(IInputStream & input) override;
+    void Invoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
 
-      void Print() const override;
+  private:
 
-    private:
+    static void ThreadProc(Thread * _this, EventLoop * eventLoop);
+    
+  private:
 
-      Buffer buf;
-    };
+    static thread_local Thread * current;
+
+    static std::set<Thread *> threads;
+
+    static std::mutex threadsMutex;
+
+  private:
+
+    std::thread thread;
+
+    std::unique_ptr<EventLoop> eventLoop;
+
+    const char * name;
+  };
+
+
+  #define THREAD_ENSURE(t, func, ...) \
+  { \
+    if (t != kad::Thread::Current()) \
+    { \
+      t->BeginInvoke([this, ##__VA_ARGS__](void *, void *) { this->func(__VA_ARGS__); }); \
+      return; \
+    } \
   }
 }

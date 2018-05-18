@@ -22,37 +22,36 @@
 
 #pragma once
 
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include <stdint.h>
 
 namespace dfs
 {
-  namespace protocol
+  class Buffer
   {
-    class ReadBlockResponse : public Instruction
-    {
-    public:
+  public:
+    
+    Buffer() = default;
 
-      ReadBlockResponse();
+    Buffer(const Buffer & val) = delete;
 
-      explicit ReadBlockResponse(uint32_t id);
+    Buffer(Buffer && val) = default;
 
-      const Buffer & Buf() const                    { return this->buf; }
+    ~Buffer();
 
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
+    Buffer & operator=(const Buffer & val) = delete;
 
-    public:
+    Buffer & operator=(Buffer && val) = default;
 
-      bool Serialize(IOutputStream & output) const override;
+    void * Buf() const       { return this->buf; }
 
-      bool Deserialize(IInputStream & input) override;
+    size_t Size() const      { return this->size; }
 
-      void Print() const override;
+    bool Resize(size_t size, bool clean = false);
 
-    private:
+  private:
 
-      Buffer buf;
-    };
-  }
+    uint8_t * buf = nullptr;
+
+    size_t size = 0;
+  };
 }

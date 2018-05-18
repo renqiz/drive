@@ -22,55 +22,38 @@
 
 #pragma once
 
-#include <string>
-#include "Buffer.h"
-#include "protocol/Instruction.h"
+#include "network/IServerHandler.h"
+#include "network/Connection.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class WriteBlockRequest : public Instruction
+    class Server
     {
     public:
 
-      WriteBlockRequest();
+      virtual ~Server() = default;
 
-      explicit WriteBlockRequest(uint32_t id);
+      virtual bool Listen(const IEndPoint * local) = 0;
 
-      const std::string & PartitionId() const       { return this->partitionId; }
+      virtual void Shutdown() = 0;
 
-      void SetPartitionId(std::string id)           { this->partitionId = std::move(id); }
+      void ResetHandler(std::unique_ptr<IServerHandler> val)
+      {
+        this->handler = std::move(val);
+      }
 
-      uint64_t BlockId() const                      { return this->blockId; }
+    protected:
 
-      void SetBlockId(uint64_t id)                  { this->blockId = id; }
-
-      uint32_t Offset() const                       { return this->offset; }
-
-      void SetOffset(uint32_t val)                  { this->offset = val; }
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-    
-      bool Serialize(IOutputStream & output) const override;
-    
-      bool Deserialize(IInputStream & input) override;
-    
-      void Print() const override;
+      IServerHandler * Handler() const
+      {
+        return this->handler.get();
+      }
 
     private:
 
-      std::string partitionId;
-
-      uint64_t blockId = 0;
-
-      uint32_t offset = 0;
-
-      Buffer buf;
+      std::unique_ptr<IServerHandler> handler;
     };
   }
 }

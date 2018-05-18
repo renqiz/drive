@@ -20,39 +20,41 @@
   SOFTWARE.
 */
 
-#pragma once
-
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include "network/Client.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class ReadBlockResponse : public Instruction
+    bool Client::Connect(const IEndPoint * remote)
     {
-    public:
+      auto conn = this->CreateConnection(remote);
+      if (!conn)
+      {
+        return false;
+      }
 
-      ReadBlockResponse();
+      this->connection = std::unique_ptr<Connection>(conn);
+      return true;
+    }
 
-      explicit ReadBlockResponse(uint32_t id);
 
-      const Buffer & Buf() const                    { return this->buf; }
+    bool Client::IsConnected() const
+    {
+      return this->connection != nullptr;
+    }
 
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
 
-    public:
+    bool Client::Disconnect()
+    {
+      this->connection.reset(nullptr);
+      return true;
+    }
 
-      bool Serialize(IOutputStream & output) const override;
 
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      Buffer buf;
-    };
+    Connection * Client::GetConnection() const
+    {
+      return this->connection.get();
+    }
   }
 }

@@ -20,39 +20,12 @@
   SOFTWARE.
 */
 
-#pragma once
-
-#include "Buffer.h"
-#include "protocol/Instruction.h"
-
+#include "network/FileEndPoint.h"
 
 namespace dfs
 {
-  namespace protocol
+  namespace network
   {
-    class ReadBlockResponse : public Instruction
-    {
-    public:
-
-      ReadBlockResponse();
-
-      explicit ReadBlockResponse(uint32_t id);
-
-      const Buffer & Buf() const                    { return this->buf; }
-
-      void SetBuf(Buffer && val)                    { this->buf = std::move(val); }
-
-    public:
-
-      bool Serialize(IOutputStream & output) const override;
-
-      bool Deserialize(IInputStream & input) override;
-
-      void Print() const override;
-
-    private:
-
-      Buffer buf;
-    };
+    FileEndPoint * FileEndPoint::this_endpoint = nullptr;
   }
 }

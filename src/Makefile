@@ -2,6 +2,14 @@
 VPATH = ../../out/cm256/lib ../../out/ubd/lib
 
 HEADERS = \
+	network/Client.h \
+	network/Connection.h \
+	network/FileClient.h \
+	network/FileConnection.h \
+	network/FileEndPoint.h \
+	network/IEndPoint.h \
+	network/Server.h \
+	network/FileServer.h \
 	protocol/CreatePartitionRequest.h \
 	protocol/CreatePartitionResponse.h \
 	protocol/Instruction.h \
@@ -14,16 +22,25 @@ HEADERS = \
 	protocol/WriteBlockResponse.h \
   Action.h \
   BitSet.h \
+	Buffer.h \
 	BufferedInputStream.h \
 	BufferedOutputStream.h \
+	EventLoop.h\
 	IInputStream.h \
 	IOutputStream.h \
+	LockFreeQueue.h \
   Options.h \
   Partition.h \
+	Thread.h \
   Util.h \
   Volume.h \
 
 SOURCES = \
+	network/Client.cpp \
+	network/FileClient.cpp \
+	network/FileConnection.cpp \
+	network/FileEndPoint.cpp \
+	network/FileServer.cpp \
 	protocol/CreatePartitionRequest.cpp \
 	protocol/CreatePartitionResponse.cpp \
 	protocol/Instruction.cpp \
@@ -34,11 +51,14 @@ SOURCES = \
 	protocol/WriteBlockResponse.cpp \
   Action.cpp \
   BitSet.cpp \
+	Buffer.cpp \
 	BufferedInputStream.cpp \
 	BufferedOutputStream.cpp \
+	EventLoop.cpp \
   Main.cpp \
   Options.cpp \
   Partition.cpp \
+	Thread.cpp \
   Volume.cpp \
   VolumeCell.cpp \
   VolumeColumn.cpp \
@@ -52,6 +72,6 @@ LIBS = \
 
 TARGET = drive
 CCFLAGS = -std=c++11 -msse4.1 -I. -I../../ubd/out/inc -I../../cm256/out/inc
-LDFLAGS = -lcrypto
+LDFLAGS = -lcrypto -pthread
 
 include Cpp.mk

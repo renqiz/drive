@@ -22,61 +22,40 @@
 
 #pragma once
 
-#include <thread>
-#include <memory>
-#include <set>
-#include <mutex>
-#include <atomic>
-#include "EventLoop.h"
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include "network/IEndPoint.h"
 
 namespace dfs
 {
-  class Thread
+  namespace network
   {
-  public:
+    class SocketEndPoint : public IEndPoint
+    {
+    public:
 
-    static Thread * Current();
+      explicit SocketEndPoint(struct sockaddr * val, size_t len, int domain, int type);
 
-  public:
+      ~SocketEndPoint() override;
 
-    explicit Thread(const char * name = nullptr);
+      struct sockaddr * Addr() const    { return reinterpret_cast<struct sockaddr *>(addr); }
 
-    ~Thread();
+      size_t Size() const               { return this->size; }
 
-    bool IsRunning() const;
+      int Domain() const                { return this->domain; }
 
-    void BeginInvoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
+      int Type() const                  { return this->type; }
 
-    void Invoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
+    private:
 
-  private:
+      uint8_t * addr;
 
-    static void ThreadProc(Thread * _this, EventLoop * eventLoop);
-    
-  private:
+      size_t size;
 
-    static thread_local Thread * current;
+      int domain;
 
-    static std::set<Thread *> threads;
-
-    static std::mutex threadsMutex;
-
-  private:
-
-    std::thread thread;
-
-    std::unique_ptr<EventLoop> eventLoop;
-
-    const char * name;
-  };
-
-
-  #define THREAD_ENSURE(t, func, ...) \
-  { \
-    if (t != kad::Thread::Current()) \
-    { \
-      t->BeginInvoke([this, ##__VA_ARGS__](void *, void *) { this->func(__VA_ARGS__); }); \
-      return; \
-    } \
+      int type;
+    };
   }
 }

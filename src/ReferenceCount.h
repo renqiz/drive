@@ -20,12 +20,39 @@
   SOFTWARE.
 */
 
-#include "network/FileEndPoint.h"
+#pragma once
+
+#include <stdint.h>
+#include <atomic>
 
 namespace dfs
 {
-  namespace network
+  class ReferenceCount
   {
-    FileEndPoint * FileEndPoint::this_endpoint = nullptr;
-  }
+  public:
+    
+    virtual ~ReferenceCount() = default;
+
+    void AddReference()
+    {
+      ++this->referenceCount;
+    }
+
+    void ReleaseReference()
+    {
+      if (--this->referenceCount == 0)
+      {
+        delete this;
+      }
+    }
+
+    uint32_t GetReferenceCount()
+    {
+      return this->referenceCount;
+    }
+
+  private:
+
+    std::atomic<uint32_t> referenceCount{1};
+  };
 }

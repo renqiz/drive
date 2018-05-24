@@ -34,24 +34,26 @@ namespace dfs
 
     Buffer(const Buffer & val) = delete;
 
-    Buffer(Buffer && val) = default;
+    Buffer(Buffer && val);
 
     ~Buffer();
 
     Buffer & operator=(const Buffer & val) = delete;
 
-    Buffer & operator=(Buffer && val) = default;
+    Buffer & operator=(Buffer && val);
 
     void * Buf() const       { return this->buf; }
 
     size_t Size() const      { return this->size; }
 
-    bool Resize(size_t size, bool clean = false);
+    bool Resize(size_t size);
 
   private:
 
     uint8_t * buf = nullptr;
 
     size_t size = 0;
+
+    size_t memsize = 0;
   };
 }

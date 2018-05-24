@@ -22,39 +22,17 @@
 
 #pragma once
 
-#include "network/FileEndPoint.h"
-#include "network/Connection.h"
-
 namespace dfs
 {
   namespace network
   {
-    class FileConnection : public Connection
+    class MessageSender
     {
     public:
 
-      explicit FileConnection(std::unique_ptr<IEndPoint> local, std::unique_ptr<IEndPoint> remote);
+      virtual ~MessageSender() = default;
 
-      bool Send(const void * data, size_t len) override;
-
-      bool Receive(Buffer & buffer) override;
-
-      bool Wait(int msTimeout = 0) override;
-
-      static void GetFolderPath(char * buffer, const FileEndPoint * to);
-
-    private:
-
-      static const char * ROOT;
-
-      static void GetFolderPath(char * buffer, const FileEndPoint * from, const FileEndPoint * to);
-
-      static void Mkdir(const FileEndPoint * from, const FileEndPoint * to);
-
-    private:
-
-      FileEndPoint * fepLocal = nullptr;
-      FileEndPoint * fepRemote = nullptr;
+      virtual bool Send(Connection * conn, const void * data, size_t len) = 0;
     };
   }
 }

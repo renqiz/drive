@@ -22,34 +22,22 @@
 
 #pragma once
 
-#include <memory>
-#include "network/Connection.h"
+#include "network/ConnectionFactory.h"
+
 
 namespace dfs
 {
   namespace network
   {
-    class Client
+    class SocketConnectionFactory : public ConnectionFactory
     {
     public:
 
-      virtual ~Client() = default;
-
-      bool Connect(const IEndPoint * remote);
-
-      bool IsConnected() const;
-
-      bool Disconnect();
-
-      Connection * GetConnection() const;
+      Connection * Connect(EndPointPtr endpoint, int timeout) override;
 
     protected:
 
-      virtual Connection * CreateConnection(const IEndPoint * remote) = 0;
-
-    private:
-
-      std::unique_ptr<Connection> connection;
+      std::unique_ptr<MessageSender> CreateSender() override;
     };
   }
 }

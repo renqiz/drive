@@ -22,29 +22,60 @@
 
 #pragma once
 
+#include <functional>
+#include <mutex>
+#include <condition_variable>
 #include <atomic>
-#include "network/FileEndPoint.h"
-#include "network/Client.h"
+#include "network/SocketEndPoint.h"
+#include "network/Connection.h"
 
 namespace dfs
 {
   namespace network
   {
-    class FileClient : public Client
+    class SocketConnection : public Connection
     {
     public:
 
-      explicit FileClient(const FileEndPoint & local);
+      using SendDelegate = std::function<bool(SocketConnection *, const void *, size_t)>;
 
-    protected:
+    public:
 
-      Connection * CreateConnection(const IEndPoint * remote) override;
+      explicit SocketConnection(EndPointPtr remote, int fd, SendDelegate send);
+
+      ~SocketConnection() override;
+
+      bool Send(const void * data, size_t len) override;
+
+      void Shutdown(int flag);
+
+      void Close();
+
+      void OnReceive(const void * data, size_t len);
+
+      SocketEndPoint * GetRemoteSocketEndPoint() const
+      {
+        return dynamic_cast<SocketEndPoint *>(this->RemoteEndPoint());
+      }
+
+      int SocketFd() const
+      {
+        return this->fd;
+      }
 
     private:
 
-      FileEndPoint localEndPoint;
+      void SetNonBlock();
 
-      static std::atomic<uint16_t> lastId;
+    private:
+
+      int fd;
+
+      SendDelegate send;
+
+      std::mutex mutex;
+
+      std::atomic<bool> closed{false};
     };
   }
 }

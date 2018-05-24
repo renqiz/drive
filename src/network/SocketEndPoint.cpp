@@ -20,25 +20,35 @@
   SOFTWARE.
 */
 
-#pragma once
-
-#include "network/Connection.h"
+#include <string.h>
+#include "network/SocketEndPoint.h"
 
 namespace dfs
 {
   namespace network
   {
-    class IServerHandler
+    SocketEndPoint::SocketEndPoint(struct sockaddr * val, size_t len, int domain, int type)
+      : addr(nullptr)
+      , size(len)
+      , domain(domain)
+      , type(type)
     {
-    public:
+      if (val)
+      {
+        this->addr = new uint8_t[len];
+        memcpy(this->addr, val, len);
+        this->size = len;
+      }
+    }
 
-      virtual ~IServerHandler() = default;
 
-      virtual void OnNewConnection(Connection * conn) {}
-
-      virtual void OnRequest(Connection * conn, const void * data, size_t len) {}
-
-      virtual void OnConnectionClosed(Connection * conn) {}
-    };
+    SocketEndPoint::~SocketEndPoint()
+    {
+      if (this->addr)
+      {
+        delete[] this->addr;
+        this->addr = nullptr;
+      }
+    }
   }
 }

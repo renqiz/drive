@@ -23,46 +23,48 @@
 #pragma once
 
 #include <memory>
-#include "Buffer.h"
+#include <functional>
+#include "ReferenceCount.h"
 #include "network/IEndPoint.h"
 
 namespace dfs
 {
   namespace network
   {
-    class Connection
+    class Connection : public ReferenceCount
     {
     public:
 
-      explicit Connection(std::unique_ptr<IEndPoint> local, std::unique_ptr<IEndPoint> remote)
-        : local(std::move(local))
-        , remote(std::move(remote))
+      using ReceiveEventHandler = std::function<void(Connection *, const void *, size_t)>;
+
+      explicit Connection(EndPointPtr remote)
+        : remote(remote)
       {
       }
 
-      virtual ~Connection() = default;
-
-      IEndPoint * LocalEndPoint()      { return this->local.get(); }
-      IEndPoint * RemoteEndPoint()     { return this->remote.get(); }
+      IEndPoint * RemoteEndPoint() const     { return this->remote.get(); }
 
       // Asynchronous send data and return immediately.
       // Return false if any error.
       virtual bool Send(const void * data, size_t len) = 0;
 
-      // Try to receive data and return immediately. Return empty if nothing received.
-      // Return false if any error.
-      virtual bool Receive(Buffer & buffer) = 0;
+      void SetReceiveHandler(ReceiveEventHandler handler)   { this->onReceived = std::move(handler); }
 
-      // Wait for next message or timeout.
-      // Return true if a new message is arrived, or false if timeout.
-      // msTimeout should be set to 0 to disable timeout.
-      virtual bool Wait(int msTimeout = 0) = 0;
+    protected:
+
+      void CallReceiveHandler(const void * data, size_t len)
+      {
+        if (this->onReceived)
+        {
+          this->onReceived(this, data, len);
+        }
+      }
 
     private:
 
-      std::unique_ptr<IEndPoint> local;
+      EndPointPtr remote;
 
-      std::unique_ptr<IEndPoint> remote;
+      ReceiveEventHandler onReceived = nullptr;
     };
   }
 }

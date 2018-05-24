@@ -20,41 +20,39 @@
   SOFTWARE.
 */
 
-#include "network/Client.h"
+#pragma once
+
+#include <memory>
+#include "network/Connection.h"
+#include "network/MessageSender.h"
 
 namespace dfs
 {
   namespace network
   {
-    bool Client::Connect(const IEndPoint * remote)
+    class ConnectionFactory
     {
-      auto conn = this->CreateConnection(remote);
-      if (!conn)
+    public:
+
+      virtual ~ConnectionFactory() = default;
+
+      bool Initialize()
       {
-        return false;
+        this->sender = CreateSender();
+        return this->sender != nullptr;
       }
 
-      this->connection = std::unique_ptr<Connection>(conn);
-      return true;
-    }
+      virtual Connection * Connect(EndPointPtr endpoint, int timeout = 5) = 0;
 
+      MessageSender * Sender()    { return this->sender.get(); }
 
-    bool Client::IsConnected() const
-    {
-      return this->connection != nullptr;
-    }
+    protected:
 
+      virtual std::unique_ptr<MessageSender> CreateSender() = 0;
 
-    bool Client::Disconnect()
-    {
-      this->connection.reset(nullptr);
-      return true;
-    }
+    private:
 
-
-    Connection * Client::GetConnection() const
-    {
-      return this->connection.get();
-    }
+      std::unique_ptr<MessageSender> sender = nullptr;
+    };
   }
 }

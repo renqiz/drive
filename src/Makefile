@@ -2,14 +2,14 @@
 VPATH = ../../out/cm256/lib ../../out/ubd/lib
 
 HEADERS = \
-	network/Client.h \
 	network/Connection.h \
-	network/FileClient.h \
-	network/FileConnection.h \
-	network/FileEndPoint.h \
+	network/ConnectionFactory.h \
 	network/IEndPoint.h \
-	network/Server.h \
-	network/FileServer.h \
+	network/SocketConnection.h \
+	network/SocketConnectionFactory.h \
+	network/SocketEndPoint.h \
+	network/SocketMessageReceiver.h \
+	network/SocketMessageSender.h \
 	dsp/CreatePartitionRequest.h \
 	dsp/CreatePartitionResponse.h \
 	dsp/Instruction.h \
@@ -21,26 +21,27 @@ HEADERS = \
 	dsp/WriteBlockRequest.h \
 	dsp/WriteBlockResponse.h \
   Action.h \
+	AsyncResult.h \
   BitSet.h \
 	Buffer.h \
 	BufferedInputStream.h \
 	BufferedOutputStream.h \
-	EventLoop.h\
+	DspClient.h \
 	IInputStream.h \
 	IOutputStream.h \
 	LockFreeQueue.h \
   Options.h \
   Partition.h \
-	Thread.h \
+	ReferenceCount.h \
   Util.h \
   Volume.h \
 
 SOURCES = \
-	network/Client.cpp \
-	network/FileClient.cpp \
-	network/FileConnection.cpp \
-	network/FileEndPoint.cpp \
-	network/FileServer.cpp \
+	network/SocketConnection.cpp \
+	network/SocketConnectionFactory.cpp \
+	network/SocketEndPoint.cpp \
+	network/SocketMessageReceiver.cpp \
+	network/SocketMessageSender.cpp \
 	dsp/CreatePartitionRequest.cpp \
 	dsp/CreatePartitionResponse.cpp \
 	dsp/Instruction.cpp \
@@ -50,15 +51,15 @@ SOURCES = \
 	dsp/WriteBlockRequest.cpp \
 	dsp/WriteBlockResponse.cpp \
   Action.cpp \
+	AsyncResult.cpp \
   BitSet.cpp \
 	Buffer.cpp \
 	BufferedInputStream.cpp \
 	BufferedOutputStream.cpp \
-	EventLoop.cpp \
+	DspClient.cpp \
   Main.cpp \
   Options.cpp \
   Partition.cpp \
-	Thread.cpp \
   Volume.cpp \
   VolumeCell.cpp \
   VolumeColumn.cpp \

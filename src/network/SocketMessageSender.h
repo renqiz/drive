@@ -22,56 +22,55 @@
 
 #pragma once
 
-#include <atomic>
 #include <thread>
-#include <functional>
 #include <memory>
-#include <mutex>
-#include <condition_variable>
+#include <atomic>
+#include "Buffer.h"
 #include "LockFreeQueue.h"
+#include "network/MessageSender.h"
 
 namespace dfs
 {
-  using EventHandler = std::function<void(void *, void *)>;
-
-  class EventLoop
+  namespace network
   {
-  private:
+    class SocketConnection;
 
-    struct EventHandlerEntry
+    class SocketMessageSender : public MessageSender
     {
-      EventHandler handler = nullptr;
-      void * sender = nullptr;
-      void * args = nullptr;
-      std::shared_ptr<std::atomic<bool>> completed;
-      std::shared_ptr<std::mutex> mutex;
-      std::shared_ptr<std::condition_variable> cond;
+    private:
+
+      struct Message
+      {
+        Buffer buffer;
+        size_t offset;
+        SocketConnection * connection;
+      };
+
+      using MessageQueue = LockFreeQueue<Message *>;
+
+    public:
+
+      SocketMessageSender();
+      ~SocketMessageSender() override;
+
+      bool Send(Connection * conn, const void * data, size_t len) override;
+
+    private:
+
+      bool Send(SocketConnection * connection, const void * data, size_t len);
+
+      void ThreadProc();
+
+    private:
+
+      std::thread thread;
+
+      std::atomic<bool> active{false};
+
+      std::unique_ptr<MessageQueue> messages;
+
+      int sv[2] = { -1, -1 };
     };
-
-  public:
-
-    ~EventLoop();
-
-    void Run();
-
-    void Quit();
-
-    void BeginInvoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
-
-    void Invoke(EventHandler handler, void * sender = nullptr, void * args = nullptr);
-
-    bool IsRunning() const { return this->alive; }
-
-  private:
-
-    std::mutex mutex;
-
-    std::condition_variable cond;
-
-    std::atomic<bool> quit{false};
-
-    std::atomic<bool> alive{false};
-
-    LockFreeQueue<EventHandlerEntry *> events;
-  };
+  }
 }
+

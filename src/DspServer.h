@@ -22,75 +22,44 @@
 
 #pragma once
 
-#include <assert.h>
-#include <string>
+#include <memory>
+#include <functional>
 #include "network/IEndPoint.h"
+#include "dsp/Instruction.h"
 
 namespace dfs
 {
   namespace network
   {
-    class FileEndPoint : public IEndPoint
-    {
-    public:
-
-      static FileEndPoint * this_endpoint;
-
-    public:
-
-      explicit FileEndPoint(const std::string & name)
-        : name(name)
-        , hasId(false)
-      {
-      }
-
-
-      explicit FileEndPoint(const std::string & name, uint16_t id)
-        : name(name)
-        , id(id)
-        , hasId(true)
-      {
-      }
-
-
-      const std::string & Name() const
-      {
-        return this->name;
-      }
-
-
-      uint16_t Id() const
-      {
-        assert(this->hasId);
-        return this->id;
-      }
-
-
-      void SetId(uint16_t val)
-      {
-        this->id = val;
-        this->hasId = true;
-      }
-
-
-    private:
-
-      std::string name;
-
-      uint16_t id;
-
-      bool hasId;
-
-    public:
-
-      struct Compare
-      {
-        bool operator()(const FileEndPoint & lhs, const FileEndPoint & rhs)
-        {
-          int val = lhs.Name().compare(rhs.Name());
-          return val < 0 || (val == 0 && lhs.Id() < rhs.Id());
-        }
-      };
-    };
+    class Connection;
   }
+
+  class DspServer
+  {
+  public:
+
+    using RequestHandler = std::function<std::unique_ptr<dsp::Instruction>(EndPointPtr, const dsp::Instruction *)>;
+
+  public:
+
+    explicit DspServer(EndPointPtr endpoint);
+
+    ~DspServer();
+
+    bool Start();
+
+    void Stop();
+
+    void SetRequestHandler(RequestHandler val)    { this->handle = std::move(val); }
+
+  private:
+
+    void OnDataReceived(network::Connection * conn, const void * data, size_t len);
+
+  private:
+
+    EndPointPtr endpoint;
+
+    RequestHandler handler = nullptr;
+  };
 }

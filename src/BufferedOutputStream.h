@@ -42,7 +42,7 @@ namespace dfs
     bool Reset() { offset = 0; return true; }
     size_t WriteBuffer(const void * ary, size_t length) override;
 
-    const uint8_t * Buffer() const { return buffer; }
+    uint8_t * Buffer() const { return buffer; }
     size_t Offset() const { return offset; }
     size_t Length() const { return length; }
   };

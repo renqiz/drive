@@ -20,36 +20,54 @@
   SOFTWARE.
 */
 
-#include "network/FileConnection.h"
-#include "network/FileClient.h"
+#pragma once
+
+#include <thread>
+#include <memory>
+#include <atomic>
+#include "Buffer.h"
+#include "LockFreeQueue.h"
 
 namespace dfs
 {
   namespace network
   {
-    std::atomic<uint16_t> FileClient::lastId{0};
+    class SocketConnection;
 
-
-    FileClient::FileClient(const FileEndPoint & local)
-      : localEndPoint(local)
+    class SocketMessageReceiver
     {
-    }
+    private:
 
-
-    Connection * FileClient::CreateConnection(const IEndPoint * remote)
-    {
-      auto remoteEndPoint = dynamic_cast<const FileEndPoint *>(remote);
-      if (!remoteEndPoint)
+      struct ReceiverBuffer
       {
-        return nullptr;
-      }
+        SocketConnection * conn = nullptr;
+        Buffer buffer;
+        size_t size = 0;
+      };
 
-      this->localEndPoint.SetId(++lastId);
+    public:
 
-      auto localPtr = std::unique_ptr<IEndPoint>(new FileEndPoint(this->localEndPoint));
-      auto remotePtr = std::unique_ptr<IEndPoint>(new FileEndPoint(*remoteEndPoint));
+      SocketMessageReceiver();
+      ~SocketMessageReceiver();
 
-      return new FileConnection(std::move(localPtr), std::move(remotePtr));
-    }
+      void AddConnection(SocketConnection * conn);
+      void RemoveConnection(SocketConnection * conn);
+
+    private:
+
+      void ThreadProc();
+
+    private:
+
+      std::thread thread;
+
+      std::atomic<bool> active{false};
+
+      std::unique_ptr<LockFreeQueue<SocketConnection *>> added;
+
+      std::unique_ptr<LockFreeQueue<SocketConnection *>> removed;
+
+      int sv[2] = { -1, -1 };
+    };
   }
 }

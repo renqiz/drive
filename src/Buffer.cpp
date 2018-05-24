@@ -24,6 +24,10 @@
 #include <string.h>
 #include "Buffer.h"
 
+#ifndef BUFSIZ
+#define BUFSIZ 8192
+#endif
+
 namespace dfs
 {
   Buffer::~Buffer()
@@ -36,30 +40,52 @@ namespace dfs
   }
 
 
-  bool Buffer::Resize(size_t size, bool clean)
+  Buffer::Buffer(Buffer && val)
   {
-    if (size == 0)
+    if (this->buf)
     {
-      if (this->buf)
-      {
-        free(this->buf);
-        this->buf = nullptr;
-      }
+      free(this->buf);
+    }
 
+    this->buf = val.buf;
+    this->size = val.size;
+    this->memsize = val.memsize;
+    val.buf = nullptr;
+    val.size = val.memsize = 0;
+  }
+
+
+  Buffer & Buffer::operator=(Buffer && val)
+  {
+    if (this->buf)
+    {
+      free(this->buf);
+    }
+
+    this->buf = val.buf;
+    this->size = val.size;
+    this->memsize = val.memsize;
+    val.buf = nullptr;
+    val.size = val.memsize = 0;
+  }
+
+
+  bool Buffer::Resize(size_t size)
+  {
+    if (size <= this->memsize)
+    {
       this->size = size;
       return true;
     }
 
-    uint8_t * ptr = static_cast<uint8_t *>(realloc(this->buf, size));
+    size_t newsize = ((size - 1) / BUFSIZ + 1) * BUFSIZ;
+
+    uint8_t * ptr = static_cast<uint8_t *>(realloc(this->buf, newsize));
     if (ptr)
     {
       this->buf = ptr;
+      this->memsize = newsize;
       this->size = size;
-
-      if (clean)
-      {
-        memset(this->buf, 0, this->size);
-      }
 
       return true;
     }

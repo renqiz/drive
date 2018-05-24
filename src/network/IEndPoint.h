@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace dfs
 {
   namespace network
@@ -32,5 +34,7 @@ namespace dfs
 
       virtual ~IEndPoint() = default;
     };
+
+    using EndPointPtr = std::shared_ptr<IEndPoint>;
   }
 }
